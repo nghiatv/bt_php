@@ -2,8 +2,35 @@
 
 if($_GET['id'])
 {
-    echo  var_dump($_GET['id']);
-    die();
+    // Khai bao cac bien gia tri
+    $nameVal = $numberVal = $colorVal = $flagVal = $priceVal = $imageVal = "";
+    // lay id cua san pham can sua
+    $id = $_GET['id'];
+
+    try {
+        $host = "localhost";
+        $user = "root";
+        $pass = "root";
+        $dbname = "ahihi";
+        $conn = new PDO('mysql:host=' . $host . ';dbname=' . $dbname, $user, $pass);
+
+        $sql = "SELECT * FROM product WHERE id = :id";
+        $smtp = $conn->prepare($sql);
+        $smtp->bindParam();
+        $smtp->execute();
+
+        $result = $smtp->fetch(PDO::FETCH_ASSOC);
+
+        $nameVal = $result['product_name'];
+        $numberVal = $result['product_number'];
+        $colorVal = $result['color'];
+
+
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        die();
+    }
+
 }
 
 ?>

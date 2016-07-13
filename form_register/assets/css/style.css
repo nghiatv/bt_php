@@ -204,9 +204,7 @@ body {
     -webkit-transform: translate(-12%, -50%) scale(0.75);
     transform: translate(-12%, -50%) scale(0.75);
 }
-.card .input-container input:focus ~ .bar:before, .card .input-container input:focus ~ .bar:after {
-    width: 50%;
-}
+
 .card .input-container input:valid ~ label {
     color: #9d9d9d;
     -webkit-transform: translate(-12%, -50%) scale(0.75);
@@ -222,6 +220,9 @@ body {
     line-height: 60px;
     -webkit-transition: 0.2s ease;
     transition: 0.2s ease;
+}
+.card .input-container input:focus ~ .bar:before, .card .input-container input:focus ~ .bar:after {
+    width: 50%;
 }
 .card .input-container .bar {
     position: absolute;

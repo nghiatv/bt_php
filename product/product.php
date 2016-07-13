@@ -13,10 +13,11 @@ class product
      */
     private $product_name; // tên sản phẩm
     private $product_number; // mã số sản phẩm
-    private $color; // màu sản phẩm
+    private $color;
     private $make_flag; // trang thai san phẩm  1: bán, 0 là chưa bán
     private $price; // giá sản phẩm
-    private $type; // loại sản phẩm
+    private $image; // loại sản phẩm
+
 
     /**
      * @return mixed
@@ -101,29 +102,29 @@ class product
     /**
      * @return mixed
      */
-    public function getType()
+    public function getImage()
     {
-        return $this->type;
+        return $this->image;
     }
 
     /**
-     * @param mixed $type
+     * @param mixed $image
      */
-    public function setType($type)
+    public function setImage($image)
     {
-        $this->type = $type;
+        $this->image = $image;
+    } // màu sản phẩm
+
+
+
+    public function __construct($product_name, $product_number, $color,$make_flag, $price,$image){
+        $this->product_name  = $product_name;
+        $this->product_number = $product_number;
+        $this->color = $color;
+        $this->make_flag  = $make_flag;
+        $this->price = $price;
+        $this->image = $image;
     }
-
-    public function create($product_name, $product_number, $color,$make_flag, $price,$type){
-        $this->setProductName($product_name);
-        $this->setProductNumber($product_number);
-        $this->setColor($color);
-        $this->setMakeFlag($make_flag);
-        $this->setPrice($price);
-        $this->setType($type);
-    }
-
-
 
 
 

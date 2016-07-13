@@ -1,3 +1,134 @@
+<?php
+
+
+//Khai bao bien kiem tra tinh hop le
+//0 la hop le
+//1 la khong hop le nhe
+$isValid = 0;
+
+//Khai bao cac bien loi
+$nameErr = $numberErr = $priceErr = $imageErr = $success = "";
+// Khai bao cac bien gia tri
+$nameVal = $numberVal = $colorVal = $flagVal = $priceVal = $imageVal = "";
+
+//echo var_dump($_POST);
+if (!empty($_POST)) {
+
+    // lay cac gia tri tu bien post
+    $nameVal = $_POST['product_name'];
+    $numberVal = $_POST['product_number'];
+    if (empty($_POST['color'])) {
+        $colorVal = '0';
+    } else {
+        $colorVal = $_POST['color'];
+    }
+    if (empty($_POST['make_flag'])) {
+        $flagVal = 0;
+    } else {
+        $flagVal = $_POST['make_flag'];
+    }
+    $priceVal = $_POST['price'];
+    $imageVal = $_FILES['product_image'];
+
+
+    // Kiem tra tinh hop le
+    //name
+
+    if (!preg_match("/^[A-Za-z0-9 ]/", $nameVal)) {
+        $nameErr = " Chỉ là chữ từ A đến Z và số từ 0 đến 9 nhé";
+        $isValid = 1;
+    }
+
+    // number
+    if (!preg_match("/^[A-Za-z0-9 ]/", $numberVal)) {
+        $numberErr = "Số không hợp lệ";
+        $isValid = 1;
+    }
+
+    // price
+
+    if (!preg_match("/^[0-9]/", $priceVal)) {
+        $priceErr = "Chỉ là số thôi chỉ là vài số thôi mà";
+        $isValid = 1;
+    }
+
+    // handle file upload
+
+    $targetDir = "image/";
+
+    if (!$_FILES['product_image']['name'] == '') {
+        $targetFile = $targetDir . basename($imageVal['name']);
+        $imageFileType = pathinfo($targetFile, PATHINFO_EXTENSION);
+        // Check xem day co phai la hinh anh hay khong
+
+        $check = getimagesize($imageVal['tmp_name']);
+        // check hang
+        if ($check == false) {
+            $isValid = 1;
+            $imageErr = "Hàng lỗi có vấn đề nhé";
+
+        }
+        if ($_FILES['product_image']['size'] > 1500000) {
+            $isValid = 1;
+            $imageErr = "Ảnh quá lớn";
+        }
+        if ($imageFileType !== 'jpg' && $imageFileType != 'png' && $imageFileType != 'gif' && $imageFileType != 'jpeg') {
+            $isValid = 1;
+
+            $imageVal = 'Không phải ảnh rồi cưng!!!';
+        }
+
+
+        // Neu khong co loi thi chuyen vao thumuc
+        move_uploaded_file($imageVal['tmp_name'], $targetFile);
+    }
+
+//
+//    echo "<pre>";
+//    echo $isValid;
+//    echo $numberErr;
+//    echo $nameErr;
+//    echo $priceErr;
+//    echo $imageErr;
+//    echo "</pre>";
+
+    //Thực hiện thêm vào cơ sở dữ liệu
+
+    if ($isValid == 0) {
+
+        try {
+            $host = "localhost";
+            $user = "root";
+            $pass = "root";
+            $dbname = "ahihi";
+            $conn = new PDO('mysql:host=' . $host . ';dbname=' . $dbname, $user, $pass);
+
+            $sql = "INSERT INTO product (product_name, product_number, product_image, color, make_flag, price) VALUES (:product_name, :product_number,:product_image, :color, :make_flag,:price)";
+            $smtp = $conn->prepare($sql);
+            $smtp->bindParam(':product_name', $nameVal, PDO::PARAM_STR);
+            $smtp->bindParam(':product_number', $numberVal);
+            $smtp->bindParam(':product_image', $imageVal['name']);
+            $smtp->bindParam(":color", $colorVal);
+            $smtp->bindParam(":make_flag", $flagVal);
+            $smtp->bindParam(":price", $priceVal);
+            $smtp->execute();
+
+            $success = " Thêm hàng thành công rồi nhé";
+
+            // xoa cac bien luu du  lieu
+
+            $nameVal = $numberVal = $colorVal = $flagVal = $priceVal = $imageVal = "";
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+            die();
+        }
+    }
+}
+
+
+?>
+
+
 <html>
 <head>
     <meta charset="utf-8">
@@ -34,46 +165,70 @@
     <div class="row z-depth-1-half">
         <div class="col s8 offset-s2">
             <form method="post" action="" enctype="multipart/form-data">
+
+                <div class="row">
+                    <h1> <?php echo $success; ?> </h1>
+                </div>
                 <div class="row">
                     <div class="input-field col s12">
-                        <input value="" id="product_name" name="product_name" type="text" class="validate">
+                        <input value="<?php echo $nameVal; ?>" id="product_name" name="product_name" type="text"
+                               class="validate">
                         <label for="product_name"> Tên Sản phẩm</label>
+                        <div class="error"><?php echo $nameErr ?></div>
                     </div>
                     <div class="input-field col s12">
-                        <input value="" id="product_number" name="product_number" type="text" class="validate">
+                        <input value="<?php echo $numberVal; ?>" id="product_number" name="product_number" type="text"
+                               class="validate">
                         <label for="product_number"> Mã số sản phẩm</label>
+
+                        <div class="error"><?php echo $numberErr ?></div>
                     </div>
 
                     <div class="input-field col s12">
                         <select name="color">
-                            <option value="0" disabled selected>Chọn màu nhé</option>
-                            <option value="1">Grey</option>
-                            <option value="2">White</option>
-                            <option value="3">Gold</option>
-                            <option value="4">Rose Gold</option>
+                            <option value="0"
+                                <?php if ($colorVal == "0") echo 'selected="selected" '; ?>
+                            >Chọn màu nhé
+                            </option>
+                            <option value="grey"
+                                <?php if ($colorVal == "grey") echo 'selected="selected" '; ?>
+                            >Grey
+                            </option>
+                            <option value="white"
+                                <?php if ($colorVal == "white") echo 'selected="selected" '; ?>
+                            >White
+                            </option>
+                            <option value="gold"
+                                <?php if ($colorVal == "gold") echo 'selected="selected" '; ?>
+                            >Gold
+                            </option>
+                            <option value="rose_gold"
+                                <?php if ($colorVal == "rose_gold") echo 'selected="selected" '; ?>
+                            >Rose Gold
+                            </option>
                         </select>
-                        <label>Màu sản phẩm</label>
+                        <label>Màu sản phẩm*</label>
+                        <div class="error"></div>
                     </div>
 
                     <div class="input-field col s12">
 
-                        <input type="checkbox" name="make_flag" class="filled-in" id="filled-in-box" value="1"/>
+                        <input type="checkbox" name="make_flag" class="filled-in" id="filled-in-box" value="1" <?php if ($flagVal == 1) echo 'selected="selected" '; ?>  />
                         <label for="filled-in-box">Public hay là không?</label>
 
 
                     </div>
                     <div class="input-field col s12">
-                        <input value="" id="price" name="price" type="text" class="validate">
+                        <input value="<?php echo $priceVal; ?>" id="price" name="price" type="text" class="validate">
                         <label for="price">Giá sản phẩm</label>
+                        <div class="error"><?php echo $priceErr ?></div>
                     </div>
                     <div class="input-field col s12">
                         <input type="file" name="product_image">
-
+                        <div class="error"><?php echo $imageErr ?></div>
                     </div>
                     <div class="input-field col s12">
-                        <button class="right btn waves-effect waves-light" type="submit">Thêm sản phẩm
-
-                        </button>
+                        <button class="right btn waves-effect waves-light" type="submit">Thêm sản phẩm</button>
                     </div>
                 </div>
             </form>
@@ -96,97 +251,6 @@
         $('select').material_select();
     });
 </script>
-
-
-<?php
-
-require_once 'product.php';
-
-//Khai bao bien kiem tra tinh hop le
-//0 la hop le
-//1 la khong hop le nhe
-$isValid = 0;
-
-//Khai bao cac bien loi
-$nameErr = $numberErr = $priceErr = $imageErr = "";
-// Khai bao cac bien gia tri
-$nameVal = $numberVal = $colorVal = $flagVal = $priceVal = $imageVal = "";
-
-if (!empty($_POST)) {
-
-    // lay cac gia tri tu bien post
-    $nameVal = $_POST['product_name'];
-    $numberVal = $_POST['product_number'];
-    $colorVal = $_POST['color'];
-    $flag = $_POST['make_flag'];
-    $priceVal = $_POST['price'];
-    $imageVal = $_FILES['product_image'];
-
-
-    // Kiem tra tinh hop le
-    //name
-
-    if (!preg_match("/^[a-zA-Z]$/", $nameVal)) {
-        $nameErr = " Name InValid. Only A-Z and a-z";
-        $isValid = 1;
-    }
-
-    // number
-    if (!preg_match("/^[a-zA-Z0-9]$/", $numberVal)) {
-        $numberErr = "Number Invalid";
-        $isValid = 1;
-    }
-
-    // price
-
-    if (!preg_match("/^[0-9]/", $priceVal)) {
-        $priceErr = " Only number accepted!";
-        $isValid = 1;
-    }
-
-    // handle file upload
-
-    $targetDir = "image/";
-
-    $targetFile = $targetDir . basename($imageVal['name']);
-    $imageFileType = pathinfo($targetFile, PATHINFO_EXTENSION);
-
-
-    // Check xem day co phai la hinh anh hay khong
-
-    $check = getimagesize($imageVal['tmp_name']);
-    // check hang
-    if($check !== false) {
-        echo "File is an image - " . $check["mime"] . ".";
-
-    } else {
-        echo "File is not an image.";
-        $imageVal = 1;
-    }
-    // check exist
-    if (file_exists($targetFile)) {
-        $priceErr = "File Exist!";
-        $isValid = 1;
-    }
-    // Neu khong co loi thi chuyen vao thumuc
-    if($imageVal == 0){
-        $uploads = move_uploaded_file($imageVal['tmp_name'], $targetFile);
-        if(!$uploads){
-            $imageVal = 1;
-        }
-    }
-
-
-    echo "<pre>";
-    echo var_dump($check);
-    echo var_dump($imageVal);
-    echo "</pre>";
-//    die(200);
-
-}
-
-
-?>
 
 
 </body>
